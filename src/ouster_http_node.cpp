@@ -7,10 +7,11 @@
 #include <chrono>
 
 using json = nlohmann::json;
-
+namespace ouster_http_node{
 class OusterHttpNode : public rclcpp::Node {
 public:
-    OusterHttpNode() : Node("ouster_http_node"), running_(true) {
+     explicit OusterHttpNode(const rclcpp::NodeOptions & options = rclcpp::NodeOptions())
+        : Node("ouster_http_node", options), running_(true) {
         // Declare configurable URL parameter
         this->declare_parameter<std::string>("url", "http://169.254.50.111/api/v1/time/sensor");
         this->get_parameter("url", url_);
@@ -74,8 +75,7 @@ private:
                 msg.stamp = this->get_clock()->now();
 
                 // Safely check and parse JSON
-                if (j.contains("sensor")) {
-                    auto &sensor = j["sensor"];
+                    auto &sensor = j;
 
                     if (sensor.contains("timestamp")) {
                         auto &timestamp = sensor["timestamp"];
@@ -109,14 +109,6 @@ private:
                         msg.diagnostics_count = 0;
                         msg.diagnostics_count_unfiltered = 0;
                     }
-                } else {
-                    RCLCPP_WARN(this->get_logger(), "JSON missing 'sensor' key");
-                    msg.timestamp_time = 0;
-                    msg.time_options_sync_pulse_in = 0;
-                    msg.sync_pulse_locked = false;
-                    msg.diagnostics_count = 0;
-                    msg.diagnostics_count_unfiltered = 0;
-                }
 
                 publisher_->publish(msg);
 
@@ -134,10 +126,7 @@ private:
         curl_easy_cleanup(curl);
     }
 };
-
-int main(int argc, char *argv[]) {
-    rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<OusterHttpNode>());
-    rclcpp::shutdown();
-    return 0;
 }
+#include "rclcpp_components/register_node_macro.hpp"
+RCLCPP_COMPONENTS_REGISTER_NODE(ouster_http_node::OusterHttpNode)
+
