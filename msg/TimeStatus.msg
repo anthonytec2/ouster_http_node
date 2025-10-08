@@ -1,0 +1,7 @@
+builtin_interfaces/Time stamp
+
+uint64 timestamp_time
+bool sync_pulse_locked
+uint64 diagnostics_count
+uint64 diagnostics_count_unfiltered
+uint64 time_options_sync_pulse_in
